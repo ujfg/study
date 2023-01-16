@@ -71,3 +71,76 @@
       - `readonly`を追記することでそのプロパティを再代入不可にできる
 - any型
   - 型システムを放棄するのと同義なので基本的に使わない
+## Section 7 interface
+名前付きのオブジェクト型を宣言するための機能
+```typescript
+interface Person {
+  name: string
+  age: number
+}
+
+const person: Person = {
+  name: 'Michael Jackson',
+  age: 20,
+}
+```
+メソッドの型も表現できる
+```typescript
+interface Person {
+  // 書き方１
+  sayHello: (name: string) => viod
+  // 書き方2
+  sayBye(name:string): void
+}
+```
+関数型の宣言にも使えるが、混同しやすいのであまり使わない
+```typescript
+interface greet {
+  (name: string): void
+}
+
+const sayHello: greet = (name: string) => {
+  console.log(`Hello, ${name}!`)
+}
+```
+- メリット
+  - dryにできる
+  - 型に命名できる
+## Section 8 型推論
+### プリミティブ型の型推論
+```typescript
+let total = 123 // number型に推論される
+let isPositive = 0 < total // boolean型に推論される
+```
+`null`はJavaScriptでは厳密にいうとプリミティブ型ではないが、TypeScriptではnull型として推論される
+### 配列型・オブジェクト型・関数型の型推論
+```typescript
+const nameList = ['dog', 'cat', 'bird'] // string[]型に推論される
+
+const person = {
+  name: 'Michael Jackson',
+  age: 20
+} // { name: string, age: number }型に推論されている
+
+const sayHello = (name: string): string => {
+  return `Hello, ${name}!`
+} // 引数にstring型をとってstring型を返す関数型として推論される
+
+// 実際は文字列を返すことが自明なので返り値の型アノテーションは省略可
+const sayBye = (name: string) => {
+  return `Bye, ${name}!`
+}
+```
+### 型推論とリテラル型
+```typescript
+// イミュータブルな場合はリテラル型に推論される
+const name1 = 'John' // nameは'John'型に推論される
+let name2 = 'Paul' // nameはstring型に推論される
+
+const person = {
+  name: 'Steve'
+} // constで定義されているが、オブジェクトはミュータブルなためnameはstring型として推論される
+```
+- リテラル型
+  - プリミティブな値の中で文字列、数値、真偽値のみがとれる型
+  - 'John'型はstring型のサブタイプ

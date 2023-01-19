@@ -53,13 +53,14 @@ var promptInput = function (text) { return __awaiter(void 0, void 0, void 0, fun
     });
 }); };
 var HitAndBlow = /** @class */ (function () {
-    function HitAndBlow() {
+    function HitAndBlow(mode) {
         this.answerSource = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
         this.answer = [];
         this.tryCount = 0;
+        this.mode = mode;
     }
     HitAndBlow.prototype.setting = function () {
-        var answerLength = 3;
+        var answerLength = this.getAnswerLength();
         while (this.answer.length < answerLength) {
             var randNum = Math.floor(Math.random() * this.answerSource.length);
             var selectedItem = this.answerSource[randNum];
@@ -73,23 +74,31 @@ var HitAndBlow = /** @class */ (function () {
             var inputArr, result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, promptInput('[,]区切りで3つの数字を入力してください')];
+                    case 0: return [4 /*yield*/, promptInput("[,]\u533A\u5207\u308A\u3067" + this.getAnswerLength() + "\u3064\u306E\u6570\u5B57\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")];
                     case 1:
                         inputArr = (_a.sent()).split(',');
+                        if (!!this.validate(inputArr)) return [3 /*break*/, 3];
+                        printLine('無効な入力です');
+                        return [4 /*yield*/, this.play()];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 3:
+                        printLine('hoge');
                         result = this.check(inputArr);
-                        if (!(result.hit !== this.answer.length)) return [3 /*break*/, 3];
+                        if (!(result.hit !== this.answer.length)) return [3 /*break*/, 5];
                         // 不正解
                         printLine("---\nHit: " + result.hit + "\nBlow: " + result.blow + "\n---");
                         this.tryCount += 1;
                         return [4 /*yield*/, this.play()];
-                    case 2:
+                    case 4:
                         _a.sent();
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 6];
+                    case 5:
                         // 正解
                         this.tryCount += 1;
-                        _a.label = 4;
-                    case 4: return [2 /*return*/];
+                        _a.label = 6;
+                    case 6: return [2 /*return*/];
                 }
             });
         });
@@ -115,6 +124,21 @@ var HitAndBlow = /** @class */ (function () {
             blow: blowCount
         };
     };
+    HitAndBlow.prototype.validate = function (inputArr) {
+        var _this = this;
+        var isLengthValid = inputArr.length === this.answer.length;
+        var isAllAnswerSourceOption = inputArr.every(function (val) { return _this.answerSource.includes(val); });
+        var isAllDifferentValues = inputArr.every(function (val, i) { return inputArr.indexOf(val) === i; });
+        return isLengthValid && isAllAnswerSourceOption && isAllDifferentValues;
+    };
+    HitAndBlow.prototype.getAnswerLength = function () {
+        switch (this.mode) {
+            case 'normal':
+                return 3;
+            case 'hard':
+                return 4;
+        }
+    };
     return HitAndBlow;
 }());
 // 即時関数で囲まないと、prompyInputがpromiseインスタンスを返して処理が次に進んでしまう
@@ -124,7 +148,7 @@ var HitAndBlow = /** @class */ (function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                hitAndBlow = new HitAndBlow();
+                hitAndBlow = new HitAndBlow('hard');
                 hitAndBlow.setting();
                 printLine(hitAndBlow.answer.join());
                 return [4 /*yield*/, hitAndBlow.play()];

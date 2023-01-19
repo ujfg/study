@@ -1,26 +1,45 @@
-const printLine = (text: string, breakLine: boolean = true) => {
-  process.stdout.write(text + (breakLine ? '\n' : ''))
-}
-
-const promptInput = async (text: string) => {
-  printLine(`\n${text}\n`, false)
+const readLine = async () => {
   const input: string = await new Promise(
     (resolve) => process.stdin.once('data', (data) => resolve(data.toString()))
   )
   return input.trim()
 }
 
+const printLine = (text: string, breakLine: boolean = true) => {
+  process.stdout.write(text + (breakLine ? '\n' : ''))
+}
+
+const promptInput = async (text: string) => {
+  printLine(`\n${text}\n`, false)
+  return readLine()
+}
+
+const promptSelect = async <T extends string>(text: string, values: readonly T[]): Promise<T> => {
+  printLine(`\n${text}\n`, false)
+  values.forEach((value) => {
+    printLine(`- ${value}`)
+  })
+  printLine('> ', false)
+
+  const input = await readLine() as T
+  if (values.includes(input)) {
+    return input
+  } else {
+    return promptSelect<T>(text, values)
+  }
+}
+
+const modes = ['normal', 'hard'] as const
+type Mode = typeof modes[number]
+
 class HitAndBlow {
   private readonly answerSource = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
   answer: string[] = []
   private tryCount = 0
-  private mode: 'normal' | 'hard'
+  private mode: Mode = 'normal'
 
-  constructor(mode: 'normal' | 'hard') {
-    this.mode = mode
-  }
-
-  setting() {
+  async setting() {
+    this.mode = await promptSelect<Mode>('モードを入力してください', modes)
     const answerLength = this.getAnswerLength()
     while (this.answer.length < answerLength) {
       const randNum = Math.floor(Math.random() * this.answerSource.length)
@@ -91,14 +110,17 @@ class HitAndBlow {
         return 3
       case 'hard':
         return 4
+      default:
+        const neverValue: never = this.mode
+        throw new Error(`${neverValue} は無効なモードです`)
     }
   }
 }
 
 // 即時関数で囲まないと、prompyInputがpromiseインスタンスを返して処理が次に進んでしまう
 ;(async () => {
-  const hitAndBlow = new HitAndBlow('hard')
-  hitAndBlow.setting()
+  const hitAndBlow = new HitAndBlow()
+  await hitAndBlow.setting()
   printLine(hitAndBlow.answer.join())
   await hitAndBlow.play()
   hitAndBlow.end()

@@ -29,6 +29,43 @@ const promptSelect = async <T extends string>(text: string, values: readonly T[]
   }
 }
 
+const nextActions = ['play again', 'exit'] as const
+type NextAction = typeof nextActions[number]
+
+class GameProcedure {
+  currentGameTitle: string = 'janken'
+  currentGame = new Janken()
+
+  public async start() {
+    await this.play()
+  }
+
+  private end() {
+    printLine('ゲームを終了しました。')
+    process.exit()
+  }
+
+  private async play() {
+    printLine(`===\n${this.currentGameTitle} を開始します。\n===`)
+    await this.currentGame.setting()
+    await this.currentGame.play()
+
+    this.currentGame.end()
+    const action = await promptSelect<NextAction>('ゲームを続けますか？', nextActions)
+    switch (action) {
+      case 'play again':
+        await this.play()
+        break
+      case 'exit':
+        this.end()
+        break
+      default:
+        const neverValue: never = action
+        throw new Error(`${neverValue} is an invalid action.`)
+    }
+  }
+}
+
 const modes = ['normal', 'hard'] as const
 type Mode = typeof modes[number]
 
@@ -51,6 +88,7 @@ class HitAndBlow {
   }
 
   async play() {
+    printLine(this.answer.join(','))
     const inputArr = (await promptInput(`[,]区切りで${this.getAnswerLength()}つの数字を入力してください`)).split(',')
 
     if (!this.validate(inputArr)) {
@@ -76,7 +114,12 @@ class HitAndBlow {
 
   end() {
     printLine(`正解です！\n試行回数: ${this.tryCount}回`)
-    process.exit()
+    this.reset()
+  }
+
+  private reset() {
+    this.answer = []
+    this.tryCount = 0
   }
 
   private check(input: string[]) {
@@ -117,11 +160,86 @@ class HitAndBlow {
   }
 }
 
+const handSigns = ['rock', 'paper', 'scissors'] as const
+type HandSign = typeof handSigns[number]
+
+class Janken {
+  private rounds = 0
+  private currentRound = 0
+  private results = {
+    'win': 0,
+    'lose': 0,
+    'draw': 0,
+  }
+
+  async setting() {
+    const rounds = Number(await promptInput('何本勝負にしますか？'))
+    if (Number.isInteger(rounds) && 0 < rounds) {
+      this.rounds = rounds
+    } else {
+      await this.setting()
+    }
+  }
+
+  async play() {    
+    const userHandSign = await promptSelect('手を選んでください', handSigns)
+    const computerHandSign = handSigns[Math.floor(Math.random() * handSigns.length)]
+    const result = Janken.judge(userHandSign, computerHandSign)
+
+    let text: string
+    switch (result) {
+      case 'win':
+        text = '勝ち'
+        break
+      case 'lose':
+        text = '負け'
+        break
+      case 'draw':
+        text = '引き分け'
+        break
+    }
+    this.results[result] += 1
+    this.currentRound+= 1
+    printLine(`結果: ${text} あなた: ${userHandSign}, わたし: ${computerHandSign}`)
+
+    if (this.rounds === this.currentRound) {
+      printLine(`勝ち: ${this.results.win} 負け: ${this.results.lose} 引き分け: ${this.results.draw}`)
+    } else {
+      await this.play()
+    }
+  }
+
+  end() {
+    this.reset()
+  }
+
+  private reset() {
+    this.currentRound = 0
+    this.rounds = 0
+    this.results = {
+      'win': 0,
+      'lose': 0,
+      'draw': 0,
+    }
+  }
+
+  static judge(userHandSign: HandSign, ComputerHandSign: HandSign) {
+    if (userHandSign === 'rock') {
+      if (ComputerHandSign === 'paper') { return 'lose'}
+      if (ComputerHandSign === 'scissors') { return 'win'}
+    } else if (userHandSign === 'paper') {
+      if (ComputerHandSign === 'scissors') { return 'lose'}
+      if (ComputerHandSign === 'rock') { return 'win'}
+    } else if (userHandSign === 'scissors') {
+      if (ComputerHandSign === 'rock') { return 'lose'}
+      if (ComputerHandSign === 'paper') { return 'win'}
+    }
+
+    return 'draw'
+  }
+}
+
 // 即時関数で囲まないと、prompyInputがpromiseインスタンスを返して処理が次に進んでしまう
 ;(async () => {
-  const hitAndBlow = new HitAndBlow()
-  await hitAndBlow.setting()
-  printLine(hitAndBlow.answer.join())
-  await hitAndBlow.play()
-  hitAndBlow.end()
+  new GameProcedure().start()
 })()

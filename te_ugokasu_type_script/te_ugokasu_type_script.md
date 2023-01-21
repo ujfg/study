@@ -144,3 +144,37 @@ const person = {
 - リテラル型
   - プリミティブな値の中で文字列、数値、真偽値のみがとれる型
   - 'John'型はstring型のサブタイプ
+## Section 9 
+サンプルアプリケーションの仕様説明
+## Section 10 環境構築
+### package.json
+```json
+{
+  "name": "te_ugokasu_type_script",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": { // npm run xxxで実行できるスクリプト
+    "build": "tsc",
+    "dev": "tsc -w", // -wオプション(--watchのエイリアス)でホットリロード
+    "start": "node dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^16.4.13",
+    "typescript": "^4.3.5"
+  }
+}
+```
+### tsconfig.json
+```json
+{
+  "compilerOptions": {
+    "outDir": "./dist", // 出力先
+    "rootDir": "./src", // ソース
+    "strict": true, // falseだと全ての方でnullとundefinedが許容されてしまう。
+    "noFallthroughCasesInSwitch": true, // リントなどのオプション
+  }
+}
+```

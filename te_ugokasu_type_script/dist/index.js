@@ -35,6 +35,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var printLine = function (text, breakLine) {
+    if (breakLine === void 0) { breakLine = true; }
+    process.stdout.write(text + (breakLine ? '\n' : ''));
+};
 var readLine = function () { return __awaiter(void 0, void 0, void 0, function () {
     var input;
     return __generator(this, function (_a) {
@@ -46,13 +50,9 @@ var readLine = function () { return __awaiter(void 0, void 0, void 0, function (
         }
     });
 }); };
-var printLine = function (text, breakLine) {
-    if (breakLine === void 0) { breakLine = true; }
-    process.stdout.write(text + (breakLine ? '\n' : ''));
-};
 var promptInput = function (text) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        printLine("\n" + text + "\n", false);
+        printLine("\n" + text + "\n> ", false);
         return [2 /*return*/, readLine()];
     });
 }); };
@@ -61,14 +61,14 @@ var promptSelect = function (text, values) { return __awaiter(void 0, void 0, vo
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                printLine("\n" + text + "\n", false);
+                printLine("\n" + text);
                 values.forEach(function (value) {
                     printLine("- " + value);
                 });
-                printLine('> ', false);
+                printLine("> ", false);
                 return [4 /*yield*/, readLine()];
             case 1:
-                input = _a.sent();
+                input = (_a.sent());
                 if (values.includes(input)) {
                     return [2 /*return*/, input];
                 }
@@ -82,8 +82,8 @@ var promptSelect = function (text, values) { return __awaiter(void 0, void 0, vo
 var nextActions = ['play again', 'exit'];
 var GameProcedure = /** @class */ (function () {
     function GameProcedure() {
-        this.currentGameTitle = 'janken';
-        this.currentGame = new Janken();
+        this.currentGameTitle = 'hit and blow';
+        this.currentGame = new HitAndBlow();
     }
     GameProcedure.prototype.start = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -97,47 +97,45 @@ var GameProcedure = /** @class */ (function () {
             });
         });
     };
-    GameProcedure.prototype.end = function () {
-        printLine('ゲームを終了しました。');
-        process.exit();
-    };
     GameProcedure.prototype.play = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var action, _a, neverValue;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var action, neverValue;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         printLine("===\n" + this.currentGameTitle + " \u3092\u958B\u59CB\u3057\u307E\u3059\u3002\n===");
                         return [4 /*yield*/, this.currentGame.setting()];
                     case 1:
-                        _b.sent();
+                        _a.sent();
                         return [4 /*yield*/, this.currentGame.play()];
                     case 2:
-                        _b.sent();
+                        _a.sent();
                         this.currentGame.end();
                         return [4 /*yield*/, promptSelect('ゲームを続けますか？', nextActions)];
                     case 3:
-                        action = _b.sent();
-                        _a = action;
-                        switch (_a) {
-                            case 'play again': return [3 /*break*/, 4];
-                            case 'exit': return [3 /*break*/, 6];
-                        }
-                        return [3 /*break*/, 7];
-                    case 4: return [4 /*yield*/, this.play()];
+                        action = _a.sent();
+                        if (!(action === 'play again')) return [3 /*break*/, 5];
+                        return [4 /*yield*/, this.play()];
+                    case 4:
+                        _a.sent();
+                        return [3 /*break*/, 6];
                     case 5:
-                        _b.sent();
-                        return [3 /*break*/, 8];
-                    case 6:
-                        this.end();
-                        return [3 /*break*/, 8];
-                    case 7:
-                        neverValue = action;
-                        throw new Error(neverValue + " is an invalid action.");
-                    case 8: return [2 /*return*/];
+                        if (action === 'exit') {
+                            this.end();
+                        }
+                        else {
+                            neverValue = action;
+                            throw new Error(neverValue + " is an invalid action.");
+                        }
+                        _a.label = 6;
+                    case 6: return [2 /*return*/];
                 }
             });
         });
+    };
+    GameProcedure.prototype.end = function () {
+        printLine('ゲームを終了しました。');
+        process.exit();
     };
     return GameProcedure;
 }());
@@ -156,7 +154,7 @@ var HitAndBlow = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         _a = this;
-                        return [4 /*yield*/, promptSelect('モードを入力してください', modes)];
+                        return [4 /*yield*/, promptSelect('モードを入力してください。', modes)];
                     case 1:
                         _a.mode = _b.sent();
                         answerLength = this.getAnswerLength();
@@ -174,25 +172,24 @@ var HitAndBlow = /** @class */ (function () {
     };
     HitAndBlow.prototype.play = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var inputArr, result;
+            var answerLength, inputArr, result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        printLine(this.answer.join(','));
-                        return [4 /*yield*/, promptInput("[,]\u533A\u5207\u308A\u3067" + this.getAnswerLength() + "\u3064\u306E\u6570\u5B57\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")];
+                        answerLength = this.getAnswerLength();
+                        return [4 /*yield*/, promptInput("\u300C,\u300D\u533A\u5207\u308A\u3067" + answerLength + "\u3064\u306E\u6570\u5B57\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")];
                     case 1:
                         inputArr = (_a.sent()).split(',');
                         if (!!this.validate(inputArr)) return [3 /*break*/, 3];
-                        printLine('無効な入力です');
+                        printLine('無効な入力です。');
                         return [4 /*yield*/, this.play()];
                     case 2:
                         _a.sent();
                         return [2 /*return*/];
                     case 3:
-                        printLine('hoge');
                         result = this.check(inputArr);
                         if (!(result.hit !== this.answer.length)) return [3 /*break*/, 5];
-                        // 不正解
+                        // 不正解だったら続ける
                         printLine("---\nHit: " + result.hit + "\nBlow: " + result.blow + "\n---");
                         this.tryCount += 1;
                         return [4 /*yield*/, this.play()];
@@ -200,7 +197,7 @@ var HitAndBlow = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 6];
                     case 5:
-                        // 正解
+                        // 正解だったら終了
                         this.tryCount += 1;
                         _a.label = 6;
                     case 6: return [2 /*return*/];
@@ -248,20 +245,20 @@ var HitAndBlow = /** @class */ (function () {
                 return 4;
             default:
                 var neverValue = this.mode;
-                throw new Error(neverValue + " \u306F\u7121\u52B9\u306A\u30E2\u30FC\u30C9\u3067\u3059");
+                throw new Error(neverValue + " \u306F\u7121\u52B9\u306A\u30E2\u30FC\u30C9\u3067\u3059\u3002");
         }
     };
     return HitAndBlow;
 }());
-var handSigns = ['rock', 'paper', 'scissors'];
+var jankenOptions = ['rock', 'paper', 'scissors'];
 var Janken = /** @class */ (function () {
     function Janken() {
         this.rounds = 0;
-        this.currentRound = 0;
-        this.results = {
-            'win': 0,
-            'lose': 0,
-            'draw': 0
+        this.currentRound = 1;
+        this.result = {
+            win: 0,
+            lose: 0,
+            draw: 0
         };
     }
     Janken.prototype.setting = function () {
@@ -288,78 +285,75 @@ var Janken = /** @class */ (function () {
     };
     Janken.prototype.play = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var userHandSign, computerHandSign, result, text;
+            var userSelected, randomSelected, result, resultText;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, promptSelect('手を選んでください', handSigns)];
+                    case 0: return [4 /*yield*/, promptSelect("\u3010" + this.currentRound + "\u56DE\u6226\u3011\u9078\u629E\u80A2\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002", jankenOptions)];
                     case 1:
-                        userHandSign = _a.sent();
-                        computerHandSign = handSigns[Math.floor(Math.random() * handSigns.length)];
-                        result = Janken.judge(userHandSign, computerHandSign);
+                        userSelected = _a.sent();
+                        randomSelected = jankenOptions[Math.floor(Math.random() * 3)];
+                        result = Janken.judge(userSelected, randomSelected);
                         switch (result) {
                             case 'win':
-                                text = '勝ち';
+                                this.result.win += 1;
+                                resultText = '勝ち';
                                 break;
                             case 'lose':
-                                text = '負け';
+                                this.result.lose += 1;
+                                resultText = '負け';
                                 break;
                             case 'draw':
-                                text = '引き分け';
+                                this.result.draw += 1;
+                                resultText = 'あいこ';
                                 break;
                         }
-                        this.results[result] += 1;
+                        printLine("---\n\u3042\u306A\u305F: " + userSelected + "\n\u76F8\u624B" + randomSelected + "\n" + resultText + "\n---");
+                        if (!(this.currentRound < this.rounds)) return [3 /*break*/, 3];
                         this.currentRound += 1;
-                        printLine("\u7D50\u679C: " + text + " \u3042\u306A\u305F: " + userHandSign + ", \u308F\u305F\u3057: " + computerHandSign);
-                        if (!(this.rounds === this.currentRound)) return [3 /*break*/, 2];
-                        printLine("\u52DD\u3061: " + this.results.win + " \u8CA0\u3051: " + this.results.lose + " \u5F15\u304D\u5206\u3051: " + this.results.draw);
-                        return [3 /*break*/, 4];
-                    case 2: return [4 /*yield*/, this.play()];
-                    case 3:
+                        return [4 /*yield*/, this.play()];
+                    case 2:
                         _a.sent();
-                        _a.label = 4;
-                    case 4: return [2 /*return*/];
+                        _a.label = 3;
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
     Janken.prototype.end = function () {
+        printLine("\n" + this.result.win + "\u52DD" + this.result.lose + "\u6557" + this.result.draw + "\u5F15\u304D\u5206\u3051\u3067\u3057\u305F\u3002");
         this.reset();
     };
     Janken.prototype.reset = function () {
-        this.currentRound = 0;
         this.rounds = 0;
-        this.results = {
-            'win': 0,
-            'lose': 0,
-            'draw': 0
+        this.currentRound = 1;
+        this.result = {
+            win: 0,
+            lose: 0,
+            draw: 0
         };
     };
-    Janken.judge = function (userHandSign, ComputerHandSign) {
-        if (userHandSign === 'rock') {
-            if (ComputerHandSign === 'paper') {
+    Janken.judge = function (userSelected, randomSelected) {
+        if (userSelected === 'rock') {
+            if (randomSelected === 'rock')
+                return 'draw';
+            if (randomSelected === 'paper')
                 return 'lose';
-            }
-            if (ComputerHandSign === 'scissors') {
-                return 'win';
-            }
+            return 'win';
         }
-        else if (userHandSign === 'paper') {
-            if (ComputerHandSign === 'scissors') {
+        else if (userSelected === 'paper') {
+            if (randomSelected === 'rock')
+                return 'win';
+            if (randomSelected === 'paper')
+                return 'draw';
+            return 'lose';
+        }
+        else {
+            if (randomSelected === 'rock')
                 return 'lose';
-            }
-            if (ComputerHandSign === 'rock') {
+            if (randomSelected === 'paper')
                 return 'win';
-            }
+            return 'draw';
         }
-        else if (userHandSign === 'scissors') {
-            if (ComputerHandSign === 'rock') {
-                return 'lose';
-            }
-            if (ComputerHandSign === 'paper') {
-                return 'win';
-            }
-        }
-        return 'draw';
     };
     return Janken;
 }());

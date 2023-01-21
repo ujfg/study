@@ -1,27 +1,25 @@
-const readLine = async () => {
-  const input: string = await new Promise(
-    (resolve) => process.stdin.once('data', (data) => resolve(data.toString()))
-  )
-  return input.trim()
-}
-
 const printLine = (text: string, breakLine: boolean = true) => {
   process.stdout.write(text + (breakLine ? '\n' : ''))
 }
 
+const readLine = async () => {
+  const input: string = await new Promise((resolve) => process.stdin.once('data', (data) => resolve(data.toString())))
+  return input.trim()
+}
+
 const promptInput = async (text: string) => {
-  printLine(`\n${text}\n`, false)
+  printLine(`\n${text}\n> `, false)
   return readLine()
 }
 
 const promptSelect = async <T extends string>(text: string, values: readonly T[]): Promise<T> => {
-  printLine(`\n${text}\n`, false)
+  printLine(`\n${text}`)
   values.forEach((value) => {
     printLine(`- ${value}`)
   })
-  printLine('> ', false)
+  printLine(`> `, false)
 
-  const input = await readLine() as T
+  const input = (await readLine()) as T
   if (values.includes(input)) {
     return input
   } else {
@@ -33,36 +31,33 @@ const nextActions = ['play again', 'exit'] as const
 type NextAction = typeof nextActions[number]
 
 class GameProcedure {
-  currentGameTitle: string = 'janken'
-  currentGame = new Janken()
+  private currentGameTitle = 'hit and blow'
+  private currentGame = new HitAndBlow()
 
   public async start() {
     await this.play()
-  }
-
-  private end() {
-    printLine('ゲームを終了しました。')
-    process.exit()
   }
 
   private async play() {
     printLine(`===\n${this.currentGameTitle} を開始します。\n===`)
     await this.currentGame.setting()
     await this.currentGame.play()
-
     this.currentGame.end()
+
     const action = await promptSelect<NextAction>('ゲームを続けますか？', nextActions)
-    switch (action) {
-      case 'play again':
-        await this.play()
-        break
-      case 'exit':
-        this.end()
-        break
-      default:
-        const neverValue: never = action
-        throw new Error(`${neverValue} is an invalid action.`)
+    if (action === 'play again') {
+      await this.play()
+    } else if (action === 'exit') {
+      this.end()
+    } else {
+      const neverValue: never = action
+      throw new Error(`${neverValue} is an invalid action.`)
     }
+  }
+
+  private end() {
+    printLine('ゲームを終了しました。')
+    process.exit()
   }
 }
 
@@ -71,13 +66,14 @@ type Mode = typeof modes[number]
 
 class HitAndBlow {
   private readonly answerSource = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-  answer: string[] = []
+  private answer: string[] = []
   private tryCount = 0
   private mode: Mode = 'normal'
 
   async setting() {
-    this.mode = await promptSelect<Mode>('モードを入力してください', modes)
+    this.mode = await promptSelect<Mode>('モードを入力してください。', modes)
     const answerLength = this.getAnswerLength()
+
     while (this.answer.length < answerLength) {
       const randNum = Math.floor(Math.random() * this.answerSource.length)
       const selectedItem = this.answerSource[randNum]
@@ -88,26 +84,24 @@ class HitAndBlow {
   }
 
   async play() {
-    printLine(this.answer.join(','))
-    const inputArr = (await promptInput(`[,]区切りで${this.getAnswerLength()}つの数字を入力してください`)).split(',')
+    const answerLength = this.getAnswerLength()
+    const inputArr = (await promptInput(`「,」区切りで${answerLength}つの数字を入力してください`)).split(',')
 
     if (!this.validate(inputArr)) {
-      printLine('無効な入力です')
+      printLine('無効な入力です。')
       await this.play()
       return
     }
 
-    printLine('hoge')
-    
     const result = this.check(inputArr)
-    
-    if (result.hit !== this.answer.length ) {
-      // 不正解
+
+    if (result.hit !== this.answer.length) {
+      // 不正解だったら続ける
       printLine(`---\nHit: ${result.hit}\nBlow: ${result.blow}\n---`)
       this.tryCount += 1
       await this.play()
     } else {
-      // 正解
+      // 正解だったら終了
       this.tryCount += 1
     }
   }
@@ -155,21 +149,21 @@ class HitAndBlow {
         return 4
       default:
         const neverValue: never = this.mode
-        throw new Error(`${neverValue} は無効なモードです`)
+        throw new Error(`${neverValue} は無効なモードです。`)
     }
   }
 }
 
-const handSigns = ['rock', 'paper', 'scissors'] as const
-type HandSign = typeof handSigns[number]
+const jankenOptions = ['rock', 'paper', 'scissors'] as const
+type JankenOption = typeof jankenOptions[number]
 
 class Janken {
   private rounds = 0
-  private currentRound = 0
-  private results = {
-    'win': 0,
-    'lose': 0,
-    'draw': 0,
+  private currentRound = 1
+  private result = {
+    win: 0,
+    lose: 0,
+    draw: 0,
   }
 
   async setting() {
@@ -181,61 +175,63 @@ class Janken {
     }
   }
 
-  async play() {    
-    const userHandSign = await promptSelect('手を選んでください', handSigns)
-    const computerHandSign = handSigns[Math.floor(Math.random() * handSigns.length)]
-    const result = Janken.judge(userHandSign, computerHandSign)
+  async play() {
+    const userSelected = await promptSelect(`【${this.currentRound}回戦】選択肢を入力してください。`, jankenOptions)
+    const randomSelected = jankenOptions[Math.floor(Math.random() * 3)]
+    const result = Janken.judge(userSelected, randomSelected)
+    let resultText: string
 
-    let text: string
     switch (result) {
       case 'win':
-        text = '勝ち'
+        this.result.win += 1
+        resultText = '勝ち'
         break
       case 'lose':
-        text = '負け'
+        this.result.lose += 1
+        resultText = '負け'
         break
       case 'draw':
-        text = '引き分け'
+        this.result.draw += 1
+        resultText = 'あいこ'
         break
     }
-    this.results[result] += 1
-    this.currentRound+= 1
-    printLine(`結果: ${text} あなた: ${userHandSign}, わたし: ${computerHandSign}`)
+    printLine(`---\nあなた: ${userSelected}\n相手${randomSelected}\n${resultText}\n---`)
 
-    if (this.rounds === this.currentRound) {
-      printLine(`勝ち: ${this.results.win} 負け: ${this.results.lose} 引き分け: ${this.results.draw}`)
-    } else {
+    if (this.currentRound < this.rounds) {
+      this.currentRound += 1
       await this.play()
     }
   }
 
   end() {
+    printLine(`\n${this.result.win}勝${this.result.lose}敗${this.result.draw}引き分けでした。`)
     this.reset()
   }
 
   private reset() {
-    this.currentRound = 0
     this.rounds = 0
-    this.results = {
-      'win': 0,
-      'lose': 0,
-      'draw': 0,
+    this.currentRound = 1
+    this.result = {
+      win: 0,
+      lose: 0,
+      draw: 0,
     }
   }
 
-  static judge(userHandSign: HandSign, ComputerHandSign: HandSign) {
-    if (userHandSign === 'rock') {
-      if (ComputerHandSign === 'paper') { return 'lose'}
-      if (ComputerHandSign === 'scissors') { return 'win'}
-    } else if (userHandSign === 'paper') {
-      if (ComputerHandSign === 'scissors') { return 'lose'}
-      if (ComputerHandSign === 'rock') { return 'win'}
-    } else if (userHandSign === 'scissors') {
-      if (ComputerHandSign === 'rock') { return 'lose'}
-      if (ComputerHandSign === 'paper') { return 'win'}
+  static judge(userSelected: JankenOption, randomSelected: JankenOption) {
+    if (userSelected === 'rock') {
+      if (randomSelected === 'rock') return 'draw'
+      if (randomSelected === 'paper') return 'lose'
+      return 'win'
+    } else if (userSelected === 'paper') {
+      if (randomSelected === 'rock') return 'win'
+      if (randomSelected === 'paper') return 'draw'
+      return 'lose'
+    } else {
+      if (randomSelected === 'rock') return 'lose'
+      if (randomSelected === 'paper') return 'win'
+      return 'draw'
     }
-
-    return 'draw'
   }
 }
 

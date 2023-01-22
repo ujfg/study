@@ -1,5 +1,15 @@
 {
   "compilerOptions": {
-    "sourceMap": true
+    "sourceMap": true, // ソースマップを生成する(webpack側でバンドルする際にさらにソースマップを生成するために必要)
+    "target": "ES2015", // 生成されるECMAScriptのバージョン
+    "lib": ["DOM", "ESNext"], // デフォルトで読み込まれる型定義を変更したいとき(ブラウザで動かさない、など)
+    "module": "ES2015", // 出力されるファイルのモジュール形式(import, export)を指定(ES2015 or commonjs)
+    "esModuleInterop": true, // interoperability 使用するライブラリのimport方法を統一する
+    "strict": true, 
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
   }
 }

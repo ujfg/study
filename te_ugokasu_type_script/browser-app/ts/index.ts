@@ -9,10 +9,10 @@ class Application {
   start() {
     const createForm = document.getElementById('createForm') as HTMLElement
 
-    this.eventListner.add('submit-handler', 'submit', createForm, this.hundleSubmit)
+    this.eventListner.add('submit-handler', 'submit', createForm, this.handleSubmit.bind(this))
   }
 
-  private hundleSubmit = (e: Event) => {
+  private handleSubmit(e: Event) {
     e.preventDefault()
 
     const titleInput = document.getElementById('title') as HTMLInputElement

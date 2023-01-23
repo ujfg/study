@@ -1,18 +1,18 @@
-import { EventListener } from "./EventListener"
-import { Task } from "./Task"
-import { TaskCollection } from "./TaskCollection"
+import { EventListener } from './EventListener'
+import { Task } from './Task'
+import { TaskCollection } from './TaskCollection'
 
 class Application {
-  private readonly eventListner = new EventListener()
+  private readonly eventListener = new EventListener()
   private readonly taskCollection = new TaskCollection()
-  
+
   start() {
     const createForm = document.getElementById('createForm') as HTMLElement
 
-    this.eventListner.add('submit-handler', 'submit', createForm, this.hundleSubmit)
+    this.eventListener.add('submit-handler', 'submit', createForm, this.handleSubmit)
   }
 
-  private hundleSubmit = (e: Event) => {
+  private handleSubmit = (e: Event) => {
     e.preventDefault()
 
     const titleInput = document.getElementById('title') as HTMLInputElement
@@ -20,6 +20,7 @@ class Application {
     if (!titleInput.value) return
 
     const task = new Task({ title: titleInput.value })
+
     this.taskCollection.add(task)
     console.log(this.taskCollection)
   }

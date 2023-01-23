@@ -1,10 +1,14 @@
 import { EventListener } from "./EventListener"
 import { Task } from "./Task"
 import { TaskCollection } from "./TaskCollection"
+import { TaskRenderer } from "./TaskRenderer"
 
 class Application {
   private readonly eventListner = new EventListener()
   private readonly taskCollection = new TaskCollection()
+  private readonly taskRenderer = new TaskRenderer(
+    document.getElementById('todoList') as HTMLElement
+  )
   
   start() {
     const createForm = document.getElementById('createForm') as HTMLElement
@@ -12,7 +16,7 @@ class Application {
     this.eventListner.add('submit-handler', 'submit', createForm, this.handleSubmit.bind(this))
   }
 
-  private handleSubmit(e: Event) {
+  private handleSubmit(e: Event):void {
     e.preventDefault()
 
     const titleInput = document.getElementById('title') as HTMLInputElement
@@ -21,7 +25,24 @@ class Application {
 
     const task = new Task({ title: titleInput.value })
     this.taskCollection.add(task)
-    console.log(this.taskCollection)
+    const { deleteButtonEl } = this.taskRenderer.append(task)
+
+    this.eventListner.add(
+      task.id,
+      'click',
+      deleteButtonEl,
+      () => this.handleClickDeleteTask(task),
+    )
+
+    titleInput.value = ''
+  }
+
+  private handleClickDeleteTask(task: Task):void {
+    if (!window.confirm(`${task.title}を削除してよろしいですか？`)) return
+
+    this.eventListner.remove(task.id)
+    this.taskCollection.remove(task)
+    this.taskRenderer.remove(task)
   }
 }
 

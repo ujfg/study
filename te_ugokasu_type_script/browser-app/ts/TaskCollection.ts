@@ -6,4 +6,8 @@ export class TaskCollection {
   add(task: Task) {
     this.tasks.push(task)
   }
+
+  remove(task: Task) {
+    this.tasks.filter(({ id }) => id !== task.id)
+  }
 }

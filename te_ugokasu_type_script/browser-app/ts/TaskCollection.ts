@@ -1,4 +1,4 @@
-import { Task } from "./Task";
+import { Status, Task } from "./Task";
 
 export class TaskCollection {
   private tasks: Task[] = []
@@ -7,12 +7,19 @@ export class TaskCollection {
     this.tasks.push(task)
   }
 
-  remove(task: Task) {
-    this.tasks.filter(({ id }) => id !== task.id)
+  remove(tasks: Task[]) {
+    const taskIds = tasks.map((task) => task.id)
+    this.tasks = this.tasks.filter(({ id }) => {
+      !taskIds.includes(id)
+    })
   }
 
   find(id: string) {
     return this.tasks.find((task) => task.id === id)
+  }
+
+  filterByStatus(filterStatus: Status) {
+    return this.tasks.filter(({ status }) => status === filterStatus )
   }
 
   update(task: Task) {

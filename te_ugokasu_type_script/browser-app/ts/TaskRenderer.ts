@@ -16,23 +16,25 @@ export class TaskRenderer {
     return { deleteButtonEl }
   }
 
-  remove(task: Task) {
-    const taskEl = document.getElementById(task.id)
-    if (!taskEl) return
-
-    let list
-    switch (task.status) {
-      case statusMap.todo:
-        list = this.todoList
-        break
-      case statusMap.doing:
-        list = this.doingList
-        break
-      case statusMap.done:
-        list = this.doneList
-        break
-    }
-    list.removeChild(taskEl)
+  remove(tasks: Task[]) {
+    tasks.forEach((task) => {
+      const taskEl = document.getElementById(task.id)
+      if (!taskEl) return
+  
+      let list
+      switch (task.status) {
+        case statusMap.todo:
+          list = this.todoList
+          break
+        case statusMap.doing:
+          list = this.doingList
+          break
+        case statusMap.done:
+          list = this.doneList
+          break
+      }
+      list.removeChild(taskEl)
+    })
   }
 
   subscribeDragAndDrop(onDrop: (el: Element, sibling: Element | null, newStatus: Status) => void) {

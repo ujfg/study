@@ -1,5 +1,5 @@
 import { EventListener } from "./EventListener"
-import { Status, Task } from "./Task"
+import { Status, statusMap, Task } from "./Task"
 import { TaskCollection } from "./TaskCollection"
 import { TaskRenderer } from "./TaskRenderer"
 
@@ -14,8 +14,10 @@ class Application {
   
   start() {
     const createForm = document.getElementById('createForm') as HTMLElement
+    const deleteAllDoneButton = document.getElementById('deleteAllDoneTask') as HTMLElement
 
     this.eventListner.add('submit-handler', 'submit', createForm, this.handleSubmit.bind(this))
+    this.eventListner.add('delete-all-done', 'click', deleteAllDoneButton, this.handleClickDeleteAllDoneTasks.bind(this))
     this.taskRenderer.subscribeDragAndDrop(this.handleDrogAndDrop.bind(this))
   }
 
@@ -44,8 +46,16 @@ class Application {
     if (!window.confirm(`${task.title}を削除してよろしいですか？`)) return
 
     this.eventListner.remove(task.id)
-    this.taskCollection.remove(task)
-    this.taskRenderer.remove(task)
+    this.taskCollection.remove([task])
+    this.taskRenderer.remove([task])
+  }
+
+  private handleClickDeleteAllDoneTasks(): void {
+    if (!window.confirm('DONE のタスクを一括削除してよろしいですか？')) return
+
+    const doneTasks = this.taskCollection.filterByStatus(statusMap.done)
+    this.taskCollection.remove(doneTasks)
+    this.taskRenderer.remove(doneTasks)
   }
 
   private handleDrogAndDrop(el: Element, sibling: Element | null, newStatus: Status) {

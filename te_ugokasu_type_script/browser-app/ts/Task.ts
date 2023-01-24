@@ -6,7 +6,7 @@ export const statusMap = {
   done: 'DONE',
 } as const
 
-type Status = typeof statusMap[keyof typeof statusMap]
+export type Status = typeof statusMap[keyof typeof statusMap]
 
 export class Task {
   readonly id
@@ -17,5 +17,10 @@ export class Task {
     this.id = uuid()
     this.title = propaties.title
     this.status = statusMap.todo
+  }
+
+  update(properties: { title?: string, status?: Status }) {
+    if (properties.title) this.title = properties.title
+    if (properties.status) this.status = properties.status
   }
 }

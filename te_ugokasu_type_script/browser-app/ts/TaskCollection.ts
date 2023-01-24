@@ -8,10 +8,8 @@ export class TaskCollection {
   }
 
   remove(tasks: Task[]) {
-    const taskIds = tasks.map((task) => task.id)
-    this.tasks = this.tasks.filter(({ id }) => {
-      !taskIds.includes(id)
-    })
+    const taskIds = tasks.map((task) => { return task.id })
+    this.tasks = this.tasks.filter(({ id }) => !taskIds.includes(id))
   }
 
   find(id: string) {

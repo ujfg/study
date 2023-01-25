@@ -37,6 +37,25 @@ export class TaskCollection {
     })
     this.updateStrage()
   }
+  
+  moveAboveTarget(task: Task, target: Task) {
+    const taskIndex = this.tasks.indexOf(task)
+    const targetIndex = this.tasks.indexOf(target)
+
+    this.changeOrder(task, taskIndex, taskIndex < targetIndex ? targetIndex - 1 : targetIndex)
+  }
+
+  moveToLast(task: Task) {
+    const taskIndex = this.tasks.indexOf(task)
+
+    this.changeOrder(task, taskIndex, this.tasks.length)
+  }
+
+  private changeOrder(task: Task, taskIndex: number, targetIndex: number) {
+    this.tasks.splice(taskIndex, 1)
+    this.tasks.splice(targetIndex, 0, task)
+    this.updateStrage()
+  }
 
   private updateStrage() {
     this.storage.setItem(STORAGE_KEY, JSON.stringify(this.tasks))
@@ -50,7 +69,7 @@ export class TaskCollection {
       const storedTasks = JSON.parse(jsonString)
 
       assertIsTaskObjects(storedTasks)
-      
+
       return storedTasks.map(task => new Task(task))
     } catch {
       this.storage.removeItem(STORAGE_KEY)

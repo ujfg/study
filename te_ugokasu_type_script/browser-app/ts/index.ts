@@ -13,8 +13,18 @@ class Application {
   )
   
   start() {
+    const taskItems = this.taskRenderer.renderAll(this.taskCollection)
     const createForm = document.getElementById('createForm') as HTMLElement
     const deleteAllDoneButton = document.getElementById('deleteAllDoneTask') as HTMLElement
+
+    taskItems.forEach(({ task, deleteButtonEl }) => {
+      this.eventListner.add(
+        task.id,
+        'click',
+        deleteButtonEl,
+        () => this.handleClickDeleteTask(task),
+      )
+    })
 
     this.eventListner.add('submit-handler', 'submit', createForm, this.handleSubmit.bind(this))
     this.eventListner.add('delete-all-done', 'click', deleteAllDoneButton, this.handleClickDeleteAllDoneTasks.bind(this))

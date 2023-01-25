@@ -19,15 +19,15 @@ class Application {
 
     taskItems.forEach(({ task, deleteButtonEl }) => {
       this.eventListner.add(
-        task.id,
         'click',
         deleteButtonEl,
         () => this.handleClickDeleteTask(task),
+        task.id,
       )
     })
 
-    this.eventListner.add('submit-handler', 'submit', createForm, this.handleSubmit.bind(this))
-    this.eventListner.add('delete-all-done', 'click', deleteAllDoneButton, this.handleClickDeleteAllDoneTasks.bind(this))
+    this.eventListner.add('submit', createForm, this.handleSubmit.bind(this))
+    this.eventListner.add('click', deleteAllDoneButton, this.handleClickDeleteAllDoneTasks.bind(this))
     this.taskRenderer.subscribeDragAndDrop(this.handleDrogAndDrop.bind(this))
   }
 
@@ -43,7 +43,6 @@ class Application {
     const { deleteButtonEl } = this.taskRenderer.append(task)
 
     this.eventListner.add(
-      task.id,
       'click',
       deleteButtonEl,
       () => this.handleClickDeleteTask(task),

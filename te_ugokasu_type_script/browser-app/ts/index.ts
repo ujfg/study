@@ -1,7 +1,7 @@
 import { EventListener } from "./EventListener"
-import { Status, statusMap, Task } from "./Task"
-import { TaskCollection } from "./TaskCollection"
-import { TaskRenderer } from "./TaskRenderer"
+import { Status, statusMap, Task } from "./domain/Task"
+import { TaskCollection } from "./domain/TaskCollection"
+import { TaskRenderer } from "./presentation/TaskRenderer"
 
 class Application {
   private readonly eventListner = new EventListener()

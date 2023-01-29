@@ -1,7 +1,7 @@
 import dragula from "dragula";
 
-import { Status, statusMap, Task } from "./Task";
-import { TaskCollection } from "./TaskCollection";
+import { Status, statusMap, Task } from "../domain/Task";
+import { TaskCollection } from "../domain/TaskCollection";
 
 export class TaskRenderer {
   constructor(

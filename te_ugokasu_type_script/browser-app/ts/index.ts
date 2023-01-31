@@ -1,11 +1,12 @@
 import { EventListener } from "./EventListener"
 import { Status, statusMap, Task } from "./domain/Task"
-import { TaskCollection } from "./domain/TaskCollection"
 import { TaskRenderer } from "./presentation/TaskRenderer"
+import { TaskCollectionLocalStorageRepository } from "./infra/TaskCollectionRepository"
 
 class Application {
   private readonly eventListner = new EventListener()
-  private readonly taskCollection = new TaskCollection()
+  private readonly taskCollectionRepository = new TaskCollectionLocalStorageRepository()
+  private readonly taskCollection = this.taskCollectionRepository.fetch()
   private readonly taskRenderer = new TaskRenderer(
     document.getElementById('todoList') as HTMLElement,
     document.getElementById('doingList') as HTMLElement,
@@ -40,6 +41,7 @@ class Application {
 
     const task = new Task({ title: titleInput.value })
     this.taskCollection.add(task)
+    this.taskCollectionRepository.save(this.taskCollection)
     const { deleteButtonEl } = this.taskRenderer.append(task)
 
     this.eventListner.add(
@@ -56,6 +58,7 @@ class Application {
 
     this.eventListner.remove(task.id)
     this.taskCollection.remove([task])
+    this.taskCollectionRepository.save(this.taskCollection)
     this.taskRenderer.remove([task])
   }
 
@@ -64,6 +67,7 @@ class Application {
 
     const doneTasks = this.taskCollection.filterByStatus(statusMap.done)
     this.taskCollection.remove(doneTasks)
+    this.taskCollectionRepository.save(this.taskCollection)
     this.taskRenderer.remove(doneTasks)
   }
 
@@ -91,6 +95,8 @@ class Application {
     } else {
       this.taskCollection.moveToLast(task)
     }
+
+    this.taskCollectionRepository.save(this.taskCollection)
   }
 }
 

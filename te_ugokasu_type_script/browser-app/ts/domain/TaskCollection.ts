@@ -1,25 +1,36 @@
 import { Status, Task, TaskObject } from "./Task";
 
-const STORAGE_KEY = 'TASKS'
+export interface TaskCollectionRepository {
+  fetch(): TaskCollection
+  save(taskCollection: TaskCollection): void
+}
 
 export class TaskCollection {
-  private readonly storage
   private tasks: Task[] = []
 
-  constructor() {
-    this.storage = localStorage 
-    this.tasks = this.getStoredTasks()
+  private constructor(tasks: Task[]) {
+    this.tasks = tasks
+  }
+
+  // DBからの再構成時のみ使用
+  static reconstruct(taskParameters: any) {
+    assertIsTaskObjects(taskParameters)
+
+    const tasks = taskParameters.map(taskParameter => new Task(taskParameter))
+    return new TaskCollection(tasks)
+  }
+
+  getTasks() {
+    return this.tasks
   }
 
   add(task: Task) {
     this.tasks.push(task)
-    this.updateStrage()
   }
 
   remove(tasks: Task[]) {
     const taskIds = tasks.map((task) => { return task.id })
     this.tasks = this.tasks.filter(({ id }) => !taskIds.includes(id))
-    this.updateStrage()
   }
 
   find(id: string) {
@@ -35,7 +46,6 @@ export class TaskCollection {
       if (item.id === task.id) return task
       return item
     })
-    this.updateStrage()
   }
   
   moveAboveTarget(task: Task, target: Task) {
@@ -54,27 +64,6 @@ export class TaskCollection {
   private changeOrder(task: Task, taskIndex: number, targetIndex: number) {
     this.tasks.splice(taskIndex, 1)
     this.tasks.splice(targetIndex, 0, task)
-    this.updateStrage()
-  }
-
-  private updateStrage() {
-    this.storage.setItem(STORAGE_KEY, JSON.stringify(this.tasks))
-  }
-
-  private getStoredTasks() {
-    const jsonString = this.storage.getItem(STORAGE_KEY)
-    if (!jsonString) return [] 
-
-    try {
-      const storedTasks = JSON.parse(jsonString)
-
-      assertIsTaskObjects(storedTasks)
-
-      return storedTasks.map(task => new Task(task))
-    } catch {
-      this.storage.removeItem(STORAGE_KEY)
-      return []
-    }
   }
 }
 
